@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+	<script src="/javascripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript">
+    jQuery(document).ready(function(){
+    	user_list();
+
+    	jQuery('#func').change(function(){
+    		var option = jQuery(this).val();
+    		if(option != 'sign'){
+    			var val = { 'USER_UUID' : option };
+    			
+    			$.post( "/user/info", val, function(data){
+    				console.log(data);
+    				jQuery('#editform #USER_UUID').val(data.CONTENT.USER_UUID);
+    				jQuery('#editform #USER_NICKNAME').val(data.CONTENT.USER_NICKNAME);
+    				jQuery('#editform #USER_EMAIL').val(data.CONTENT.USER_EMAIL);
+    				jQuery('#editform #USER_PASSWORD').val(data.CONTENT.USER_PASSWORD);
+    				jQuery('#editform #USER_TEAM').val(data.CONTENT.USER_TEAM);
+    				jQuery('#editform #USER_COMMENT').val(data.CONTENT.USER_COMMENT);
+    				jQuery('#preview').html('');
+    				if(data.CONTENT.USER_PICTURE != null && data.CONTENT.USER_PICTURE != ''){
+    					jQuery('#preview').html('<img src="' + data.CONTENT.USER_PICTURE + '" width="100" height="100">');
+    				}
+    				jQuery('#signform').css('display', 'none');
+        			jQuery('#editform').css('display', 'block');
+    				
+    			});
+    		} else {
+    			jQuery('#signform').css('display', 'block');
+    			jQuery('#editform').css('display', 'none');
+    		}
+    	});
+    	
+		jQuery('#sub_but').click(function(){
+			$.post( "/signup", $( "#signform" ).serialize(), function(data){
+				//alert(data);
+				window.location.replace('/user');
+			});
+		});
+		
+		jQuery('#del_but').click(function(e){
+			e.preventDefault();
+			var mail = jQuery('#editform #USER_EMAIL').val();
+			var pwd	= jQuery('#editform #USER_PASSWORD').val();
+			var data = { 'USER_EMAIL' : mail, 'USER_PASSWORD' : pwd };
+			
+			$.post( "/dropout", data, function(result){
+				alert('회원탈퇴완료');
+				console.log(result);
+			});
+		});
+		
+		/* jQuery('#edit_but').click(function(){
+			//alert('수정수정');
+			jQuery.ajax({
+				url		: '/user/modify',
+				type	: 'POST',
+				async	: false,
+				mimeType:"multipart/form-data",
+				data	: jQuery('#editform'),
+				sucess	: function(data){
+					console.log('수정 : '+ data);
+				}
+			});
+		});
+		 */
+		 
+		$('#USER_EMAIL').blur(function(e) {
+			e.preventDefault();
+			var val = { 'USER_EMAIL' : $("#USER_EMAIL").val()};
+			$.post( "/email", val, function(data){
+				console.log(data.RESULT);
+				if(data.RESULT == 'SUCCESS'){
+					$('#re').css('color', 'black');
+					$('#re').text('사용가능합니다');
+				} else {
+					$('#re').css('color', 'red');
+					$('#re').text('사용이 불가능합니다');
+				}
+			});
+		});
+		
+	})
+	
+	function user_list() {
+    	jQuery.get('/user', function(data){
+    		console.log(data);
+    		jQuery(data.Itemlist).each(function(i){
+    			var innerHtml = '<option value="' + this.USER_UUID +'">' + this.USER_NICKNAME + '</option>';
+    			jQuery('#func').append(innerHtml);
+    			
+    		});
+    	});
+    }
+	
+	
+	
+    </script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+    <br><br>
+    <select name="USER_TEAM" id="func">
+		<option value="sign">회원가입</option>
+		
+	</select>
+		
+    <form action="/" method="post" id="signform" style="display:block;">
+    	닉네임 : <input type="text" name="USER_NICKNAME" id="USER_NICKNAME"><br>
+    	이메일 : <input type="text" name="USER_EMAIL" id="USER_EMAIL"><span id="re"></span><br>
+    	비밀번호 : <input type="text" name="USER_PASSWORD" id="USER_PASSWORD"><br>
+    	선호팀 : 
+		<select name="USER_TEAM">
+			<option value="LG">LG</option>
+			<option value="SA">SA</option>
+			<option value="LO">LO</option>
+			<option value="SK">SK</option>
+			<option value="DO">DO</option>
+			<option value="KI">KI</option>
+			<option value="NE">NE</option>
+			<option value="HA">HA</option>
+			<option value="NC">NC</option>
+			<option value="KT">KT</option>
+		</select>
+		<br>
+		GCM : <input type="text" name="USER_PUSH_ID" id="USER_PUSH_ID"><br>
+    	<input type="button" id="sub_but" value="등록">
+    </form>
+    
+    <form action="/user/modify" method="post" id="editform" style="display:none;" enctype="multipart/form-data">
+    	UUID : <input type="text" name="USER_UUID" id="USER_UUID"><br>
+    	닉네임 : <input type="text" name="USER_NICKNAME" id="USER_NICKNAME"><br>
+    	이메일 : <input type="text" name="USER_EMAIL" id="USER_EMAIL"><span id="re"></span><br>
+    	비밀번호 : <input type="text" name="USER_PASSWORD" id="USER_PASSWORD"><br>
+    	선호팀 : 
+		<select name="USER_TEAM" id="USER_TEAM">
+			<option value="LG">LG</option>
+			<option value="SA">SA</option>
+			<option value="LO">LO</option>
+			<option value="SK">SK</option>
+			<option value="DO">DO</option>
+			<option value="KI">KI</option>
+			<option value="NE">NE</option>
+			<option value="HA">HA</option>
+			<option value="NC">NC</option>
+			<option value="KT">KT</option>
+		</select>
+		<br>
+		프로필 : <input type="text" name="USER_COMMENT" id="USER_COMMENT"><br>
+		<div id="preview" style="width:100px;height:100px;border:1px solid green;"></div>
+		올릴 파일 : <input type="file" name="USER_PICTURE" id="USER_PICTURE"><br>
+    	<input type="submit" id="edit_but" value="수정"> | <input type="button" id="del_but" value="탈퇴">
+    </form>
+    <br><br>
+    
+  
+  </body>
+</html>

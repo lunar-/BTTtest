@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+	<script src="/javascripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript">
+    	var user_id = "11"; //11 과 22 있음
+    	
+    	jQuery(document).ready(function(){
+    		list_select();
+    		
+    		jQuery('#ins_com').click(function(){
+    			list_insert();
+    		});
+    		
+    		/* jQuery('.del_button').click(function(){
+    			alert(0);
+    			// 왜 클릭이 안되는거지=ㅅ=
+			}); */
+    		
+    	})
+    	
+    	function list_select(){
+    		jQuery('#list').empty();
+    		jQuery.get('/board/LG/T/'+user_id+'/1', function(data){
+    			console.log(data);
+    			jQuery(data.CONTENTS).each(function(i){
+    				var innerHtml = '';
+    				innerHtml += '<div style="background-color: paleturquoise; margin-bottom: 10px;">';
+    				innerHtml += '	<div style="height:65px; padding: 10px;">';
+    				innerHtml += '		<div style="float:left; padding: 10px;">';
+    				if(this.USER_PICTURE != null && this.USER_PICTURE != ''){
+    					innerHtml += '	<img src="' + this.USER_PICTURE + '" style="height:50px;width:50px;"><br>';
+    				} else {
+    					innerHtml += '		그림그림';	
+    				}
+    				
+    				innerHtml += '		</div>';
+    				innerHtml += '		<div style="float:left;">';
+    				innerHtml += '			<span style="display: inline-block;font-weight:bold;">' + this.USER_NICKNAME + '</span>';
+    				innerHtml += '			<span class="like_button" style="display: inline-block;cursor: pointer;" onclick="list_like(' + this.BOARD_INDEX + ')">&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[좋아요]</span>';
+    				
+    				if(user_id == this.USER_UUID){
+    					innerHtml += '		<span class="del_button" style="display: inline-block;cursor: pointer;" onclick="list_delete(' + this.BOARD_INDEX + ')">&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[삭제]</span>';
+    					//innerHtml += '		<input type="hidden" class="hv" value="' + this.BOARD_INDEX + '"></span>';
+    				}
+    				
+    				innerHtml += '			<span style="display: block;">' + this.USER_TEAM + '</span>';
+    				innerHtml += '			<span style="display: block;">' + this.BOARD_REGISTER_TIME + '</span>';
+    				innerHtml += '			<span style="display: block;"> S2 : ' + this.LIKE_QTY + '</span>';
+    				innerHtml += '		</div>';
+    				innerHtml += '	</div>';
+    				innerHtml += '	<div style="border:2px deepskyblue dotted; min-height: 30px; padding: 10px;">';
+    				if(this.BOARD_ATTACH_FILE != null){
+    					innerHtml += '	<img src="' + this.BOARD_ATTACH_FILE + '" style="height:130px;width:200px;"><br>';
+    				}
+    				innerHtml += this.BOARD_CONTENT;
+    				innerHtml += '	</div>';
+    				innerHtml += '</div>';
+    				
+    				jQuery('#list').append(innerHtml);
+    			})
+    		});
+    	} // list_select() end
+    	
+    	function list_insert(){
+    		var data = {
+    			"user_id" : user_id, // 임시 고정 아이디
+    			"content" : jQuery('#comment').val()
+    		};
+    		
+    		jQuery.post('/board/write/LG', data, function(){
+    			list_select();
+    			jQuery('#comment').val("");
+			});
+    	} // list_insert() end
+    	
+    	function list_delete(board_id){
+    		var data = {
+    			"USER_UUID" : user_id, // 임시 고정 아이디
+    			"BOARD_INDEX" : board_id
+    		};
+    		
+    		jQuery.post('/board/delete/LG', data, function(){
+    			list_select();
+			});
+    	} // list_delete() end
+    	
+    	function list_like(board_id){
+    		var data = {
+   				"USER_UUID" : user_id, // 임시 고정 아이디
+       			"BOARD_INDEX" : board_id
+    		};
+    		
+    		jQuery.post('/board/like/LG', data, function(result){
+    			list_select();
+    			console.log(result);
+			});
+    	} // list_like() end
+    	
+    </script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+    <br><br>
+    <form action="/board/write/LG" method="post" enctype="multipart/form-data">
+    	<input type="hidden" name="USER_UUID" value="11">
+    	<input type="text" name="BOARD_CONTENT"><br>
+    	올릴 파일 : <input type="file" name="BOARD_ATTACH_FILE"><br>
+    	<!-- <input type="button" id="ins_com" value="등록"> -->
+    	<input type="submit" value="등록">
+    </form>
+    <br><br>
+    <div id="list"></div>
+    
+  
+  </body>
+</html>

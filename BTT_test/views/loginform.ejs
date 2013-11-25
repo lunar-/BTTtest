@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+	<script src="/javascripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript">
+    jQuery(document).ready(function(){
+		jQuery('#sub_but').click(function(){
+			$.post( "/login", $( "#loginform" ).serialize(), function(data){
+				console.log(data);
+				if(data.RESULT == 'SUCCESS'){
+					alert('로그인 성공');
+				} else {
+					alert(data.RESULT_MSG);
+				}
+				//window.location.replace('/user');
+			});
+		});
+		
+		/* $('#USER_EMAIL').blur(function() {
+			var data = { 'USER_EMAIL' : $("#USER_EMAIL").val()};
+			$.post( "/email", data, function(data){
+				console.log(data.RESULT);
+				if(data.RESULT == 'SUCCESS'){
+					$('#re').css('color', 'black');
+					$('#re').text('사용가능합니다');
+				} else {
+					$('#re').css('color', 'red');
+					$('#re').text('사용이 불가능합니다');
+				}
+			});
+		}); */
+		
+	})
+	
+	
+	
+    </script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+    <br><br>
+    <form action="/" method="post" id="loginform">
+    	이메일 : <input type="text" name="USER_EMAIL" id="USER_EMAIL"><span id="re"></span><br>
+    	비밀번호 : <input type="text" name="USER_PASSWORD" id="USER_PASSWORD"><br>
+    	<input type="button" id="sub_but" value="로그인">
+    </form>
+    <br><br>
+    
+  
+  </body>
+</html>

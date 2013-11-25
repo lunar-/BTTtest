@@ -1,0 +1,49 @@
+불판 글 조회
+SELECT U.USER_UUID, U.USER_NICKNAME, U.USER_PICTURE, U.USER_TEAM, B.BOARD_INDEX, B.BOARD_USER_ID, 
+	B.BOARD_CONTENT, B.BOARD_REGISTER_TIME, B.BOARD_ATTACH_FILE,
+	(select count(*) from BTT_LIKE_LG where LIKE_BOARD_ID = B.BOARD_INDEX and LIKE_CANCEL_YN = "N") as LIKE_QTY,
+	(select 'Y' from BTT_LIKE_LG where LIKE_USER_ID = ? and LIKE_BOARD_ID = B.BOARD_INDEX and LIKE_CANCEL_YN = "N") as LIKE_YN  
+	FROM BTT_BOARD_LG B, BTT_USER_INFO U 
+	WHERE B.BOARD_USER_ID = U.USER_UUID and B.BOARD_DEL_YN = "N" 
+	ORDER BY BOARD_REGISTER_TIME DESC
+	limit ? , 10
+
+
+불판 글 쓰기
+insert into BTT_BOARD_LG (BOARD_USER_ID, BOARD_CONTENT, BOARD_REGISTER_TIME)
+		values(?, ?, now())
+
+
+
+불판 글 지우기
+update BTT_BOARD_LG set BOARD_DEL_YN = "Y" 
+		where BOARD_USER_ID = ? and BOARD_INDEX = ?
+
+
+좋아요
+- 좋아요 여부 확인
+select LIKE_INDEX, LIKE_CANCEL_YN from BTT_LIKE_LG
+			where LIKE_USER_ID = ? and LIKE_BOARD_ID = ?
+
+- 좋아요 추가
+insert into BTT_LIKE_LG (LIKE_USER_ID, LIKE_BOARD_ID) values (?, ?)
+
+-좋아요 취소(삭제)
+delete from BTT_LIKE_LG
+			where LIKE_USER_ID = ? and LIKE_BOARD_ID = ?
+
+-좋아요 카운트
+select count(*) from BTT_LIKE_LG
+		where LIKE_BOARD_ID = ?
+
+
+하이라이트
+SELECT U.USER_UUID, U.USER_NICKNAME, U.USER_PICTURE, U.USER_TEAM, B.BOARD_INDEX, B.BOARD_USER_ID,
+	B.BOARD_CONTENT, B.BOARD_REGISTER_TIME, B.BOARD_ATTACH_FILE,
+	(select count(*) from BTT_LIKE_' + team_name + ' where LIKE_BOARD_ID = B.BOARD_INDEX and LIKE_CANCEL_YN = "N") as LIKE_QTY,
+	(select 'Y' from BTT_LIKE_LG where LIKE_USER_ID = ? and LIKE_BOARD_ID = B.BOARD_INDEX and LIKE_CANCEL_YN = "N") as LIKE_YN 
+	FROM BTT_BOARD_' + team_name + ' B, BTT_USER_INFO U 
+		WHERE B.BOARD_USER_ID = U.USER_UUID and B.BOARD_DEL_YN = "N" 
+		and (select count(*) from btt_like_lg where like_board_id = B.BOARD_INDEX ) >= 1 
+		and DATE_FORMAT(BOARD_REGISTER_TIME,"%y%m%d") = 'HDATE(131012의 형태)'
+		ORDER BY BOARD_REGISTER_TIME DESC
